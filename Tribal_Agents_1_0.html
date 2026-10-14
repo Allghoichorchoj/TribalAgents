@@ -584,7 +584,7 @@ function traumaTribes(v){
   return hit;
 }
 function startTrauma(t){const TL=agents.find(x=>x.ldr&&x.tribe===t);if(TL)for(const m of [TL,...TL.mem])m.neuro=Math.min(1,m.neuro+.5);if(!(t.trauma>0))note(`${t.name} Tribe: kin was lost, trauma phase begins`);t.trauma=TRAUMA_T}
-function kill(v,k,noCorpse){if(!noCorpse&&!v.gone)corpses.push({x:v.sx??v.x,y:v.sy??v.y,a:v.sa??v.a,rr:isChild(v)?R*.65:R,ag:v,t:0});const hit=traumaTribes(v);if(v.ldr){for(const m of v.mem)m.lead=null;v.mem=[];v.ldr=false;if(v.tribe){v.tribe.site=null;clearFriends(v.tribe)}v.tribe=null}if(v.lead){const L=v.lead;L.mem=L.mem.filter(x=>x!==v);if(!L.mem.length){L.ldr=false;if(L.tribe){L.tribe.site=null;clearFriends(L.tribe)}L.from=L.tribe;L.tribe=null;L.left=true;}v.lead=null}v.gone=true;agents=agents.filter(x=>x!==v);for(const x of agents)if(isKin(x,v))x.neuro=Math.min(1,x.neuro+.6);for(const t of hit)if(agents.some(x=>x.ldr&&x.tribe===t))startTrauma(t);if(k){k.xp+=20}const wasSel=sel===v;if(wasSel)sel=null;renderList(true);if(wasSel)drawNet()}
+function kill(v,k,noCorpse){if(!noCorpse)lastKillT=performance.now();if(!noCorpse&&!v.gone)corpses.push({x:v.sx??v.x,y:v.sy??v.y,a:v.sa??v.a,rr:isChild(v)?R*.65:R,ag:v,t:0});const hit=traumaTribes(v);if(v.ldr){for(const m of v.mem)m.lead=null;v.mem=[];v.ldr=false;if(v.tribe){v.tribe.site=null;clearFriends(v.tribe)}v.tribe=null}if(v.lead){const L=v.lead;L.mem=L.mem.filter(x=>x!==v);if(!L.mem.length){L.ldr=false;if(L.tribe){L.tribe.site=null;clearFriends(L.tribe)}L.from=L.tribe;L.tribe=null;L.left=true;}v.lead=null}v.gone=true;agents=agents.filter(x=>x!==v);for(const x of agents)if(isKin(x,v))x.neuro=Math.min(1,x.neuro+.6);for(const t of hit)if(agents.some(x=>x.ldr&&x.tribe===t))startTrauma(t);if(k){k.xp+=20}const wasSel=sel===v;if(wasSel)sel=null;renderList(true);if(wasSel)drawNet()}
 // Auto food: the slider sets how many randomly spawned food pieces (not tree or hand-dropped food) the world keeps; missing pieces are added, extras removed
 // Form a tribe button: drag a rectangle over free adult agents; the highest-level one becomes the Chieftain, the rest join its tribe
 function setForm(on){formMode=on;selRect=null;document.getElementById('formtribe').classList.toggle('on',on);cv.classList.toggle('form',on)}
@@ -1095,12 +1095,14 @@ function startTalk(d){stopTalk();talkT.push(setTimeout(talkRound,d))}
 function sayLine(t,done){const b=document.getElementById('bub');if(agents.length)return;b.textContent=t;b.classList.add('talk');
   talkT.push(setTimeout(()=>{b.classList.remove('talk');talkT.push(setTimeout(done,350))},1400+t.length*55))} // longer lines stay longer
 var haltNext=false; // the Refresh button: he says Halt! first
-function talkRound(){if(agents.length)return;lastG=haltNext?GREET.indexOf('Halt!'):pickLine(GREET,lastG);haltNext=false;lastF=pickLine(FUNNY,lastF);
+var deathNext=false,lastKillT=-1e9,lastD=-1; // the whole population died out: he makes one joke about death instead of greeting
+const DEATH=["Extinction. Well, that is one way to end overpopulation.", "Everybody is dead. Excellent, the data is finally stable.", "Survival of the fittest. Apparently, nobody was fit.", "Zero guinea pigs. Statistically, this is very easy to analyze.", "They all died. Note to self: next time, more food, fewer swords.", "No survivors. I blame the mushrooms. I always blame the mushrooms.", "Death rate: one hundred percent. Finally, a perfect score.", "Do not worry, I have plenty of guinea pigs. Probably.", "My grant committee will call this \"a learning experience.\"", "Pedigree guinea pigs, pedigree problems, pedigree funeral."];
+function talkRound(){if(agents.length)return;if(deathNext){deathNext=false;lastD=pickLine(DEATH,lastD);sayLine(DEATH[lastD],()=>{talkT.push(setTimeout(()=>{if(!agents.length)document.getElementById('evildoc').classList.add('gone')},2000))});return}lastG=haltNext?GREET.indexOf('Halt!'):pickLine(GREET,lastG);haltNext=false;lastF=pickLine(FUNNY,lastF);
   sayLine(GREET[lastG],()=>sayLine(FUNNY[lastF],()=>{talkT.push(setTimeout(()=>{if(!agents.length)document.getElementById('evildoc').classList.add('gone')},2000))}))} // once: a greeting, then one joke; if nothing happens for 2 s afterwards the picture fades away
 function fadeInPic(){const p=document.getElementById('evildoc');p.classList.remove('pre','fi','gone');void p.offsetWidth;p.classList.add('fi');startTalk(2300)} // the bubble comes a moment after the picture has finished fading in
 addEventListener('load',()=>requestAnimationFrame(()=>requestAnimationFrame(fadeInPic))); // page load: the picture starts invisible, then slowly fades in
 document.getElementById('evildoc').addEventListener('animationend',e=>e.target.classList.remove('fi'));
-function syncEmpty(){const n=document.getElementById('net'),was=n.classList.contains('empty'),now=agents.length===0;n.classList.toggle('empty',now);if(now&&!was)fadeInPic();if(!now&&was)stopTalk()} // empty scene: only the picture; first spawn fades it out
+function syncEmpty(){const n=document.getElementById('net'),was=n.classList.contains('empty'),now=agents.length===0;n.classList.toggle('empty',now);if(now&&!was){if(!haltNext&&performance.now()-lastKillT<2000)deathNext=true;fadeInPic()}if(!now&&was)stopTalk()} // empty scene: only the picture; first spawn fades it out
 function drawNet(){
   syncEmpty();
   document.getElementById('net').classList.toggle('nosel',!sel);
@@ -1147,7 +1149,7 @@ document.getElementById('tribes').onchange=e=>{tribesOn=e.target.checked}; // of
 const pl=document.getElementById('play'),pa=document.getElementById('pause');
 function setRun(r){running=r;pl.classList.toggle('on',r);pa.classList.toggle('on',!r)}
 pl.onclick=()=>setRun(true);pa.onclick=()=>setRun(false);
-document.getElementById('refresh').onclick=()=>{haltNext=true;reset();fadeInPic()}; // refreshing the game: the picture fades in again, then Halt! and one joke
+document.getElementById('refresh').onclick=()=>{haltNext=true;deathNext=false;reset();fadeInPic()}; // refreshing the game: the picture fades in again, then Halt! and one joke
 addEventListener('resize',fit);
 fit();reset();setRun(true);sndBtn();
 const SIM_HZ=60; // simulation steps per second at 1x
