@@ -1102,7 +1102,7 @@ function talkRound(){if(agents.length)return;if(deathNext){deathNext=false;lastD
 function fadeInPic(){const p=document.getElementById('evildoc');p.classList.remove('pre','fi','gone');void p.offsetWidth;p.classList.add('fi');startTalk(2300)} // the bubble comes a moment after the picture has finished fading in
 addEventListener('load',()=>requestAnimationFrame(()=>requestAnimationFrame(fadeInPic))); // page load: the picture starts invisible, then slowly fades in
 document.getElementById('evildoc').addEventListener('animationend',e=>e.target.classList.remove('fi'));
-function syncEmpty(){const n=document.getElementById('net'),was=n.classList.contains('empty'),now=agents.length===0;n.classList.toggle('empty',now);if(now&&!was){if(!haltNext&&performance.now()-lastKillT<2000)deathNext=true;fadeInPic()}if(!now&&was)stopTalk()} // empty scene: only the picture; first spawn fades it out
+function syncEmpty(){const n=document.getElementById('net'),was=n.classList.contains('empty'),now=agents.length===0;n.classList.toggle('empty',now);if(now&&!was){if(!haltNext&&performance.now()-lastKillT<2000){deathNext=true;const sp=document.getElementById('spd');if(sp&&sp.value!=='0'){sp.value='0';sp.dispatchEvent(new Event('input'))}}fadeInPic()}if(!now&&was)stopTalk()} // empty scene: only the picture; first spawn fades it out
 function drawNet(){
   syncEmpty();
   document.getElementById('net').classList.toggle('nosel',!sel);
