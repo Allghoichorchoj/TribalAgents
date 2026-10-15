@@ -335,7 +335,7 @@ function kin(x,y){
 }
 function inbF(a){if(a._F===undefined)a._F=(a.mom&&a.dad)?kin(a.mom,a.dad):0;return a._F}
 function infoHTML(a,dead){
-  const T=dead?null:tribeOf(a),row=(k,v)=>`<span>${k}</span><b>${v}</b>`;
+  const T=dead?null:tribeOf(a),row=(k,v)=>{v=String(v);const i=v.search(/[A-Za-z]/);if(i>=0&&!/^<|^\d/.test(v.slice(0,i+1)))v=v.slice(0,i)+v[i].toUpperCase()+v.slice(i+1);return `<span>${k}</span><b>${v}</b>`}; // every value starts with a capital letter
   const act=dead?'deceased':a.guard?'protect ally':a.follow?'follow a male to his tribe':a.mission?(['search for a female','approach her','lead her home','court bride'][a.mission.phase]):a.protecting?'guard food claim':a.feeding?(a.carry?'bring food to ally':'fetch food for ally'):a.coop?'cooperate':OUT[a.act];
   const r1=[row('Action',act),row('Level',`${lvl(a)} · XP ${a.xp}`),row('Health',`${Math.max(0,Math.round(a.hp))}/${maxHp(a)}`),row('Hunger',`${Math.round(Math.min(a.hunger,1)*100)}%`),row('Libido',isChild(a)?'—':`${Math.round(a.lib*100)}%`),row('Age',`${ageYears(a)}/${a.lifeY} years`),row('Fitness',`${Math.round(a.fit*100)}%`)];
   r1.push(row('Stress',`${Math.round(neuroOf(a)*100)}%${T&&T.trauma>0?' · traumatized':''}`),row('Trend',`${a.prog>.05?'progressing':a.prog<-.05?'regressing':'stable'} · speed ${a.prog>=0?'+':''}${(a.prog*40).toFixed(0)}%`));
@@ -346,7 +346,7 @@ function infoHTML(a,dead){
   r2.push(row('Children',a.kids.length?a.kids.join(', '):'none'));
   if(a.partner)r2.push(row('Partner',a.partner.name));
   if(T)r2.push(row('Tribe',`${T.emoji} ${T.name} Tribe · ${T.animal} totem`),row('Tribe members',gid(a).mem.length+1)); // tribe info comes last
-  return `<div class="who"><span class="gs">${a.sex==='M'?'♂':'♀'}</span> ${dn(a,true)}${a.preg>0&&!dead?' (pregnant)':''}${dead?' (deceased)':''}</div><div class="kv">${r1.join('')}${r2.join('')}</div>`;
+  return `<div class="who"><span class="gs">${a.sex==='M'?'♂':'♀'}</span> ${dn(a,true)}${a.preg>0&&!dead?' (pregnant)':''}</div><div class="kv">${r1.join('')}${r2.join('')}</div>`;
 }
 // Food claim: when a tribe member spots a bigger amount of food (4+ pieces close together) the whole tribe guards it against rivals
 // Food is bucketed in a grid (45 px cells, rebuilt at most once per tick) so cluster searches stay fast even with 1000 food pieces
