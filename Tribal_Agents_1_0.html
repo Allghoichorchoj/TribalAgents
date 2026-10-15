@@ -137,7 +137,7 @@ function sndHit(){ // every hit plays the damage sound once (throttled, at most 
   const src=ac.createBufferSource(),g=ac.createGain();g.gain.value=.35;src.buffer=b;src.playbackRate.value=Math.pow(2,(Math.random()*8-4)/12);src.connect(g).connect(SND.out);src.onended=()=>{SND.hv--};src.start(0,b.s0,b.s1-b.s0)}
 function sndUpdate(){}
  // +0.1 for every revision of Neural_Agents.txt (0.1 = first spec)
-let W=1000,H=640;const R=9,FOOD_N=14,VIS=190,IN=['level','health','threat','hunger','age','gender','neuroticism'],NIN=7,OUT=['eat','fight','flight','altruism','fitness'],HN=6;
+let W=1000,H=640;const R=9,FOOD_N=14,VIS=190,IN=['level','health','threat','hunger','age','gender','stress'],NIN=7,OUT=['eat','fight','flight','altruism','fitness'],HN=6;
 const NAMES_M=['Carl', 'John', 'Tom', 'Alex', 'Sam', 'Ben', 'Kai', 'Finn', 'Ryan', 'Owen', 'Theo', 'Hugo', 'Leo', 'Max', 'Noah', 'Sean', 'Eli', 'Jack', 'Omar', 'Igor', 'Milo', 'Hank', 'Gus', 'Otto', 'Rex', 'Sven', 'Walt', 'Zed', 'Abel', 'Cole', 'Dax', 'Ford', 'Hal', 'Jude', 'Lars', 'Ned', 'Pete', 'Seth', 'Vic', 'Wade', 'Yuri'],NAMES_F=['Zoe', 'Luna', 'Ada', 'Mia', 'Ivy', 'Eva', 'Lily', 'Rosa', 'Dana', 'Nora', 'Cleo', 'Vera', 'Tess', 'Faye', 'Iris', 'Nell', 'Pia', 'Uma', 'Yara', 'Bria', 'Elsa', 'Gwen', 'Ines', 'Kira', 'Maya', 'Opal', 'Rhea', 'Tara', 'Xena', 'Zara'],NAMES=NAMES_M.concat(NAMES_F);
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 let behav=5,relSel=null,formMode=false,selRect=null,skipClick=false,tribesOn=true,autoN=100,foodT=0,notes=[],noteSig='',agents=[],food=[],obs=[],sel=null,running=true,speed=1,repro=1,nameIdx=0,sc=1,ox=0,oy=0,listSig='';
@@ -338,7 +338,7 @@ function infoHTML(a,dead){
   const T=dead?null:tribeOf(a),row=(k,v)=>`<span>${k}</span><b>${v}</b>`;
   const act=dead?'deceased':a.guard?'protect ally':a.follow?'follow a male to his tribe':a.mission?(['search for a female','approach her','lead her home','court bride'][a.mission.phase]):a.protecting?'guard food claim':a.feeding?(a.carry?'bring food to ally':'fetch food for ally'):a.coop?'cooperate':OUT[a.act];
   const r1=[row('Level',`${lvl(a)} · XP ${a.xp}`),row('Health',`${Math.max(0,Math.round(a.hp))}/${maxHp(a)}`),row('Hunger',`${Math.round(Math.min(a.hunger,1)*100)}%`),row('Libido',isChild(a)?'—':`${Math.round(a.lib*100)}%`),row('Age',`${ageYears(a)}/${a.lifeY} years`),row('Overall fitness',`${Math.round(a.fit*100)}%`),row('Action',act)];
-  r1.push(row('Neuroticism',`${Math.round(neuroOf(a)*100)}%${T&&T.trauma>0?' · traumatized':''}`),row('Trend',`${a.prog>.05?'progressing':a.prog<-.05?'regressing':'stable'} · speed ${a.prog>=0?'+':''}${(a.prog*40).toFixed(0)}%`));
+  r1.push(row('Stress',`${Math.round(neuroOf(a)*100)}%${T&&T.trauma>0?' · traumatized':''}`),row('Trend',`${a.prog>.05?'progressing':a.prog<-.05?'regressing':'stable'} · speed ${a.prog>=0?'+':''}${(a.prog*40).toFixed(0)}%`));
   const r2=[row('Coat',coatName(a.coat)),row('Generation',`${a.gen}${isChild(a)?' · child':''}`)];
   {const F=inbF(a);r2.push(row('Inbreeding coeff.',`${+(F*100).toFixed(2)}%${hpPen(a)>0?` (−${hpPen(a)} max HP)`:''}`));}
   if(!a.tree.m&&!a.tree.f)r2.push(row('Lineage','Founder, no known parents'));
