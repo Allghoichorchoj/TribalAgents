@@ -1026,7 +1026,7 @@ const pos=(l,i)=>{const n=[NIN,HN,5][l],top=[30,22,36][l],gap=[46,54,62][l];retu
 function drawRelNet(g){ // neural network of the clicked relative: DNA + learned weights, node brightness = its last activations
   const s=document.getElementById('relnet'),h=document.getElementById('relh');s.innerHTML='';
   if(!g){s.style.display='none';h.style.display='none';return}
-  s.style.display='';h.style.display='';h.textContent=`${g.name.toUpperCase()}'S NEURAL NETWORK`;
+  s.style.display='';h.style.display='none';h.textContent=`${g.name.toUpperCase()}'S NEURAL NETWORK`; // heading hidden, like the main one
   const el=(t,at)=>{const n=document.createElementNS(SVG,t);for(const k in at)n.setAttribute(k,at[k]);s.appendChild(n);return n};
   [['Input',76],['Hidden',142],['Output',204]].forEach(([t,x])=>{el('text',{x,y:7,'text-anchor':'middle'}).textContent=t});
   for(const [Wm,Pm,l] of [[g.W1,g.P1,0],[g.W2,g.P2,1]])Wm.forEach((row,j)=>row.forEach((w0,i)=>{const w=w0+Pm[j][i],p=pos(l,i),q=pos(l+1,j);
